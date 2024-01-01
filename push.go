@@ -9,7 +9,7 @@ import (
 	"github.com/yolo-pkgs/grace"
 )
 
-const deadlineTimeoutSeconds = 5
+const deadlineTimeoutSeconds = 6
 
 func lastCommitUnixtime() (int64, error) {
 	output, err := grace.RunTimed(defaultExecTimeout, "git", "log", "-1", "--format=%ct")
@@ -25,7 +25,7 @@ func lastCommitUnixtime() (int64, error) {
 }
 
 func rapidPush() error {
-	deadline := time.NewTimer(deadlineTimeoutSeconds*time.Second)
+	deadline := time.NewTimer(deadlineTimeoutSeconds * time.Second)
 
 	for {
 		select {
@@ -52,6 +52,6 @@ func rapidPush() error {
 }
 
 func gitPush() error {
-	_, err := grace.RunTimed(defaultExecTimeout, "git", "push", "--quiet")
+	_, err := grace.RunTimed(20*time.Second, "git", "push", "--quiet")
 	return err
 }
