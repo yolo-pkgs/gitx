@@ -39,8 +39,13 @@ func main() {
 					},
 				},
 				Action: func(c *cli.Context) error {
-					if err := onlyFromDefaultBranch(); err != nil {
+					ok, err := onlyFromDefaultBranch()
+					if err != nil {
 						return err
+					}
+					if !ok {
+						fmt.Println("branch actions are only allowed from default branch")
+						return nil
 					}
 
 					if c.Bool("random") {

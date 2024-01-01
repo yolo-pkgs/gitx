@@ -52,22 +52,22 @@ func defaultBranch() (string, error) {
 	return candidates[0], nil
 }
 
-func onlyFromDefaultBranch() error {
+func onlyFromDefaultBranch() (bool, error) {
 	current, err := currentBranch()
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	def, err := defaultBranch()
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	if current != def {
-		return errors.New("branch actions are only allowed from default branch")
+		return false, nil
 	}
 
-	return nil
+	return true, nil
 }
 
 func fetchAll() error {
