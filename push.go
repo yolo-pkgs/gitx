@@ -16,11 +16,14 @@ func lastCommitUnixtime() (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	trimmed := strings.TrimSpace(output)
+
 	timestamp, err := strconv.ParseInt(trimmed, 10, 64)
 	if err != nil {
 		return 0, err
 	}
+
 	return timestamp, nil
 }
 
@@ -43,7 +46,9 @@ func rapidPush() error {
 			if err := gitPush(); err != nil {
 				return fmt.Errorf("failed to push: %w", err)
 			}
+
 			notifySend("git pushed!")
+
 			return nil
 		}
 
