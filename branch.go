@@ -164,7 +164,7 @@ func createRandomBranch(gid int64) error {
 		return fmt.Errorf("failed to generate random word: %w", err)
 	}
 
-	branchName := fmt.Sprintf("%sg%d-%s", branchPrefix, gid, randomWord)
+	branchName := fmt.Sprintf("%sg%dr-%s", branchPrefix, gid, randomWord)
 	_, err = grace.RunTimed(defaultExecTimeout, "git", "checkout", "-b", branchName)
 	return err
 }
