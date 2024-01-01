@@ -168,21 +168,44 @@ func getModifier(fromDefault, xMark bool) string {
 	return "f"
 }
 
+func makeSourceMark(modifier string) (string, error) {
+	if modifier == "f" || modifier == "x" {
+		current, err := currentBranch()
+		if err != nil {
+			return "", err
+		}
+		currentFields := strings.Split(current, "-")
+		last := currentFields[len(currentFields)-1]
+		return "-" + last, nil
+	}
+	return "", nil
+}
+
 func createRandomBranch(gid int64, fromDefault, xMark bool) error {
 	modifier := getModifier(fromDefault, xMark)
+	sourceMark, err := makeSourceMark(modifier)
+	if err != nil {
+		return err
+	}
+
 	randomWord, err := randomWord()
 	if err != nil {
 		return fmt.Errorf("failed to generate random word: %w", err)
 	}
 
-	branchName := fmt.Sprintf("%s%s%d-r-%s", branchPrefix, modifier, gid, randomWord)
+	branchName := fmt.Sprintf("%s%s%d%s-%s", branchPrefix, modifier, gid, sourceMark, randomWord)
 	_, err = grace.RunTimed(defaultExecTimeout, "git", "checkout", "-b", branchName)
 	return err
 }
 
 func createGlobalBranch(gid int64, name string, fromDefault, xMark bool) error {
 	modifier := getModifier(fromDefault, xMark)
-	branchName := fmt.Sprintf("%s%s%d-%s", branchPrefix, modifier, gid, name)
-	_, err := grace.RunTimed(defaultExecTimeout, "git", "checkout", "-b", branchName)
+	sourceMark, err := makeSourceMark(modifier)
+	if err != nil {
+		return err
+	}
+
+	branchName := fmt.Sprintf("%s%s%d%s-%s", branchPrefix, modifier, gid, sourceMark, name)
+	_, err = grace.RunTimed(defaultExecTimeout, "git", "checkout", "-b", branchName)
 	return err
 }
