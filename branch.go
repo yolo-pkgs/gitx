@@ -1,15 +1,16 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
 	"strconv"
 	"strings"
 
-	"github.com/samber/lo"
 	"github.com/yolo-pkgs/grace"
+
+	"github.com/yolo-pkgs/gitx/generic"
+	"github.com/yolo-pkgs/gitx/system"
 )
 
 const (
@@ -17,48 +18,13 @@ const (
 	gitxBranchFilePath = "sys/.gitx_branch"
 )
 
-func getHome() (string, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("HOME env error: %w", err)
-	}
-	return home, nil
-}
-
-func currentBranch() (string, error) {
-	output, err := grace.RunTimed(defaultExecTimeout, "git", "branch", "--show-current")
-	if err != nil {
-		return "", fmt.Errorf("failed to get current branch: %w", err)
-	}
-	return strings.TrimSpace(output), nil
-}
-
-func defaultBranch() (string, error) {
-	output, err := grace.RunTimed(defaultExecTimeout, "git", "branch")
-	if err != nil {
-		return "", fmt.Errorf("failed to run git branch: %w", err)
-	}
-	fields := strings.Fields(output)
-
-	usualDefaults := []string{"release", "master", "main"}
-	candidates := lo.Intersect(fields, usualDefaults)
-	if len(candidates) == 0 {
-		return "", errors.New("no default branch found")
-	}
-	if len(candidates) > 1 {
-		return "", fmt.Errorf("multiple candidates for default branch found: %v", candidates)
-	}
-
-	return candidates[0], nil
-}
-
 func fromDefaultBranch() (bool, error) {
-	current, err := currentBranch()
+	current, err := generic.CurrentBranch()
 	if err != nil {
 		return false, err
 	}
 
-	def, err := defaultBranch()
+	def, err := generic.DefaultBranch()
 	if err != nil {
 		return false, err
 	}
@@ -90,7 +56,7 @@ func listBranches() error {
 }
 
 func globalBranchID() (int64, error) {
-	home, err := getHome()
+	home, err := system.GetHome()
 	if err != nil {
 		return 0, err
 	}
@@ -109,7 +75,7 @@ func globalBranchID() (int64, error) {
 }
 
 func writeNewBranchGID() (int64, error) {
-	home, err := getHome()
+	home, err := system.GetHome()
 	if err != nil {
 		return 0, err
 	}
@@ -138,7 +104,7 @@ func writeNewBranchGID() (int64, error) {
 }
 
 func randomWord() (string, error) {
-	home, err := getHome()
+	home, err := system.GetHome()
 	if err != nil {
 		return "", err
 	}
@@ -170,7 +136,7 @@ func getModifier(fromDefault, xMark bool) string {
 
 func makeSourceMark(modifier string) (string, error) {
 	if modifier == "f" || modifier == "x" {
-		current, err := currentBranch()
+		current, err := generic.CurrentBranch()
 		if err != nil {
 			return "", err
 		}

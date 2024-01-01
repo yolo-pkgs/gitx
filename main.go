@@ -8,6 +8,8 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"github.com/yolo-pkgs/grace"
+
+	"github.com/yolo-pkgs/gitx/status"
 )
 
 const defaultExecTimeout = 10 * time.Second
@@ -19,6 +21,9 @@ func notifySend(msg string) {
 func main() {
 	app := &cli.App{
 		Usage: `Wildly unstable functions for git`,
+		Flags: []cli.Flag{
+			&cli.BoolFlag{Name: "notify", Aliases: []string{"n"}, Usage: "notify instead of stdout"},
+		},
 		Commands: []*cli.Command{
 			{
 				Name:  "rapid-push",
@@ -64,6 +69,23 @@ func main() {
 						return err
 					}
 					return createRandomBranch(gid, fromDefault, true)
+				},
+			},
+			{
+				Name:    "status",
+				Usage:   "cool status",
+				Aliases: []string{"s"},
+				Action: func(c *cli.Context) error {
+					statusMsg, err := status.CoolStatus()
+					if err != nil {
+						return err
+					}
+					if c.Bool("notify") {
+						notifySend(statusMsg)
+					} else {
+						fmt.Println(statusMsg)
+					}
+					return nil
 				},
 			},
 		},
