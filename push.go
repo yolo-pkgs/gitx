@@ -25,7 +25,7 @@ func lastCommitUnixtime() (int64, error) {
 }
 
 func rapidPush() error {
-	deadline := time.NewTimer(deadlineTimeoutSeconds)
+	deadline := time.NewTimer(deadlineTimeoutSeconds*time.Second)
 
 	for {
 		select {
