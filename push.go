@@ -9,7 +9,7 @@ import (
 	"github.com/yolo-pkgs/grace"
 )
 
-const deadlineTimeoutSeconds = 3
+const deadlineTimeoutSeconds = 5
 
 func lastCommitUnixtime() (int64, error) {
 	output, err := grace.RunTimed("git log -1 --format=%ct", defaultExecTimeout)
@@ -43,6 +43,8 @@ func rapidPush() error {
 			if err := gitPush(); err != nil {
 				return fmt.Errorf("failed to push: %w", err)
 			}
+			notifySend("git pushed!")
+			return nil
 		}
 
 		time.Sleep(50 * time.Millisecond)
