@@ -67,6 +67,26 @@ func main() {
 					return createGlobalBranch(gid, branchName)
 				},
 			},
+			{
+				Name:  "rand",
+				Usage: "shortcut for 'gitx branch --random'",
+				Action: func(_ *cli.Context) error {
+					ok, err := onlyFromDefaultBranch()
+					if err != nil {
+						return err
+					}
+					if !ok {
+						fmt.Println("branch actions are only allowed from default branch")
+						return nil
+					}
+
+					gid, err := writeNewBranchGID()
+					if err != nil {
+						return err
+					}
+					return createRandomBranch(gid)
+				},
+			},
 		},
 	}
 
