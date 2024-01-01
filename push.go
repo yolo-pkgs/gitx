@@ -12,7 +12,7 @@ import (
 const deadlineTimeoutSeconds = 5
 
 func lastCommitUnixtime() (int64, error) {
-	output, err := grace.RunTimed("git log -1 --format=%ct", defaultExecTimeout)
+	output, err := grace.RunTimed(defaultExecTimeout, "git", "log", "-1", "--format=%ct")
 	if err != nil {
 		return 0, err
 	}
@@ -52,6 +52,6 @@ func rapidPush() error {
 }
 
 func gitPush() error {
-	_, err := grace.RunTimed("git push --quiet", defaultExecTimeout)
+	_, err := grace.RunTimed(defaultExecTimeout, "git", "push", "--quiet")
 	return err
 }

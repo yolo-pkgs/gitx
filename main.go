@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"time"
 
 	"github.com/urfave/cli/v2"
@@ -15,9 +13,7 @@ import (
 const defaultExecTimeout = 10 * time.Second
 
 func notifySend(msg string) {
-	ctx, cancel := context.WithTimeout(context.Background(), defaultExecTimeout)
-	defer cancel()
-	_, _ = grace.Spawn(ctx, exec.Command("sh", "-c", fmt.Sprintf(`notify-send '%s'`, msg)))
+	_, _ = grace.RunTimedSh(defaultExecTimeout, fmt.Sprintf("notify-send '%s'", msg))
 }
 
 func main() {
