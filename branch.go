@@ -158,22 +158,30 @@ func randomWord() (string, error) {
 	return strings.TrimSpace(output), nil
 }
 
-func createRandomBranch(gid int64) error {
+func getModifier(fromDefault, xMark bool) string {
+	if xMark {
+		return "x"
+	}
+	if fromDefault {
+		return "g"
+	}
+	return "f"
+}
+
+func createRandomBranch(gid int64, fromDefault, xMark bool) error {
+	modifier := getModifier(fromDefault, xMark)
 	randomWord, err := randomWord()
 	if err != nil {
 		return fmt.Errorf("failed to generate random word: %w", err)
 	}
 
-	branchName := fmt.Sprintf("%sg%dr-%s", branchPrefix, gid, randomWord)
+	branchName := fmt.Sprintf("%s%s%d-r-%s", branchPrefix, modifier, gid, randomWord)
 	_, err = grace.RunTimed(defaultExecTimeout, "git", "checkout", "-b", branchName)
 	return err
 }
 
-func createGlobalBranch(gid int64, name string, fromDefault bool) error {
-	modifier := "f"
-	if fromDefault {
-		modifier = "g"
-	}
+func createGlobalBranch(gid int64, name string, fromDefault, xMark bool) error {
+	modifier := getModifier(fromDefault, xMark)
 	branchName := fmt.Sprintf("%s%s%d-%s", branchPrefix, modifier, gid, name)
 	_, err := grace.RunTimed(defaultExecTimeout, "git", "checkout", "-b", branchName)
 	return err

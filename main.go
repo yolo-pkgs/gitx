@@ -29,32 +29,14 @@ func main() {
 			},
 			{
 				Name:    "branch",
-				Usage:   "branch functions",
+				Usage:   "create branch",
 				Aliases: []string{"b"},
-				Flags: []cli.Flag{
-					&cli.BoolFlag{
-						Name:    "random",
-						Aliases: []string{"r"},
-						Usage:   "create a branch with generated random name",
-					},
-				},
 				Action: func(c *cli.Context) error {
 					fromDefault, err := fromDefaultBranch()
 					if err != nil {
 						return err
 					}
 
-					if c.Bool("random") {
-						if !fromDefault {
-							fmt.Println("random branch only allowed from default branch")
-							return nil
-						}
-						gid, err := writeNewBranchGID()
-						if err != nil {
-							return err
-						}
-						return createRandomBranch(gid)
-					}
 					branchName := c.Args().First()
 					if branchName == "" {
 						return listBranches()
@@ -64,27 +46,39 @@ func main() {
 					if err != nil {
 						return err
 					}
-					return createGlobalBranch(gid, branchName, fromDefault)
+					return createGlobalBranch(gid, branchName, fromDefault, false)
 				},
 			},
 			{
 				Name:  "rand",
-				Usage: "shortcut for 'gitx branch --random'",
+				Usage: "create random branch",
 				Action: func(_ *cli.Context) error {
-					ok, err := fromDefaultBranch()
+					fromDefault, err := fromDefaultBranch()
 					if err != nil {
 						return err
-					}
-					if !ok {
-						fmt.Println("random branch only allowed from default branch")
-						return nil
 					}
 
 					gid, err := writeNewBranchGID()
 					if err != nil {
 						return err
 					}
-					return createRandomBranch(gid)
+					return createRandomBranch(gid, fromDefault, false)
+				},
+			},
+			{
+				Name:  "randx",
+				Usage: "create random experimental branch",
+				Action: func(_ *cli.Context) error {
+					fromDefault, err := fromDefaultBranch()
+					if err != nil {
+						return err
+					}
+
+					gid, err := writeNewBranchGID()
+					if err != nil {
+						return err
+					}
+					return createRandomBranch(gid, fromDefault, true)
 				},
 			},
 		},
