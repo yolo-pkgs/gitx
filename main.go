@@ -1,14 +1,20 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
 
 	"github.com/urfave/cli/v2"
+	"github.com/yolo-pkgs/grace"
 )
 
 const defaultExecTimeout = 10 * time.Second
+
+func notifySend(msg string) {
+	_, _ = grace.RunTimed(fmt.Sprintf(`notify-send '%s'`, msg), defaultExecTimeout)
+}
 
 func main() {
 	app := &cli.App{
@@ -24,6 +30,7 @@ func main() {
 	}
 
 	if err := app.Run(os.Args); err != nil {
+		notifySend(err.Error())
 		log.Panic(err)
 	}
 }
