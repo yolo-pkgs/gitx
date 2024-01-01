@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"time"
 
 	"github.com/urfave/cli/v2"
@@ -13,7 +15,9 @@ import (
 const defaultExecTimeout = 10 * time.Second
 
 func notifySend(msg string) {
-	_, _ = grace.RunShTimed(fmt.Sprintf(`notify-send "%s"`, msg), defaultExecTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), defaultExecTimeout)
+	defer cancel()
+	_, _ = grace.Spawn(ctx, exec.Command("sh", "-c", fmt.Sprintf(`'notify-send "%s"'`, msg)))
 }
 
 func main() {
@@ -30,7 +34,7 @@ func main() {
 	}
 
 	if err := app.Run(os.Args); err != nil {
-		notifySend(err.Error())
+		notifySend("error executing gitx")
 		log.Panic(err)
 	}
 }
