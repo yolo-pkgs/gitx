@@ -18,9 +18,9 @@ const (
 )
 
 func getHome() (string, error) {
-	home := os.Getenv("")
-	if home == "" {
-		return "", errors.New("HOME env not found")
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("HOME env error: %w", err)
 	}
 	return home, nil
 }
@@ -144,7 +144,13 @@ func randomWord() (string, error) {
 	}
 
 	// TODO: wordlist to reliable place
-	output, err := grace.RunTimed(defaultExecTimeout, "shuf", "-n", "1", fmt.Sprintf("%s/dev/dotfiles/config/nvim/100k.txt", home))
+	output, err := grace.RunTimed(
+		defaultExecTimeout,
+		"shuf",
+		"-n",
+		"1",
+		fmt.Sprintf("%s/dev/dotfiles/config/nvim/100k.txt", home),
+	)
 	if err != nil {
 		return "", err
 	}
