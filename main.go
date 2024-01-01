@@ -13,7 +13,7 @@ import (
 const defaultExecTimeout = 10 * time.Second
 
 func notifySend(msg string) {
-	_, _ = grace.RunTimed(fmt.Sprintf(`notify-send '%s'`, msg), defaultExecTimeout)
+	_, _ = grace.RunShTimed(fmt.Sprintf(`notify-send '%s'`, msg), defaultExecTimeout)
 }
 
 func main() {
