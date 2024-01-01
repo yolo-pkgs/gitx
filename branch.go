@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -11,7 +13,18 @@ import (
 	"github.com/yolo-pkgs/grace"
 )
 
-const branchPrefix = "samira/"
+const (
+	branchPrefix       = "samira/"
+	gitxBranchFilePath = "sys/.gitx_branch"
+)
+
+func getHome() (string, error) {
+	home := os.Getenv("")
+	if home == "" {
+		return "", errors.New("HOME env not found")
+	}
+	return home, nil
+}
 
 func currentBranch() (string, error) {
 	output, err := grace.RunTimed(defaultExecTimeout, "git", "branch", "--show-current")
@@ -77,18 +90,13 @@ func listBranches() error {
 	return nil
 }
 
-func randomWord() (string, error) {
-	// TODO: wordlist to reliable place
-	output, err := grace.RunTimed(defaultExecTimeout, "shuf", "-n", "1", "~/dev/dotfiles/config/nvim/100k.txt")
+func globalBranchID() (int64, error) {
+	home, err := getHome()
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
-	return strings.TrimSpace(output), nil
-}
-
-func newGlobalBranchID() (int64, error) {
-	raw, err := os.ReadFile("~/sys/.gitx_branch")
+	raw, err := os.ReadFile(fmt.Sprintf("%s/%s", home, gitxBranchFilePath))
 	if err != nil {
 		return 0, fmt.Errorf("failed to read .gitx_branch: %w", err)
 	}
@@ -98,15 +106,54 @@ func newGlobalBranchID() (int64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("failed to parse global branch id: %w", err)
 	}
-	return gid + 1, nil
+	return gid, nil
 }
 
-func createRandomBranch() error {
-	gid, err := newGlobalBranchID()
+func writeNewBranchGID() (int64, error) {
+	home, err := getHome()
 	if err != nil {
-		return fmt.Errorf("failed to generate branch gid: %w", err)
+		return 0, err
 	}
 
+	gid, err := globalBranchID()
+	if err != nil {
+		return 0, err
+	}
+	newGID := gid + 1
+
+	f, err := os.OpenFile(fmt.Sprintf("%s/%s", home, gitxBranchFilePath), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o755)
+	if err != nil {
+		return 0, fmt.Errorf("failed to open %s: %w", gitxBranchFilePath, err)
+	}
+
+	_, err = io.WriteString(f, strconv.FormatInt(newGID, 10))
+	if err != nil {
+		return 0, fmt.Errorf("failed to write new gid: %w", err)
+	}
+
+	if err := f.Close(); err != nil {
+		return 0, fmt.Errorf("failed to close %s: %w", gitxBranchFilePath, err)
+	}
+
+	return newGID, nil
+}
+
+func randomWord() (string, error) {
+	home, err := getHome()
+	if err != nil {
+		return "", err
+	}
+
+	// TODO: wordlist to reliable place
+	output, err := grace.RunTimed(defaultExecTimeout, "shuf", "-n", "1", fmt.Sprintf("%s/dev/dotfiles/config/nvim/100k.txt", home))
+	if err != nil {
+		return "", err
+	}
+
+	return strings.TrimSpace(output), nil
+}
+
+func createRandomBranch(gid int64) error {
 	randomWord, err := randomWord()
 	if err != nil {
 		return fmt.Errorf("failed to generate random word: %w", err)
@@ -117,13 +164,8 @@ func createRandomBranch() error {
 	return err
 }
 
-func createGlobalBranch(name string) error {
-	gid, err := newGlobalBranchID()
-	if err != nil {
-		return fmt.Errorf("failed to generate branch gid: %w", err)
-	}
-
+func createGlobalBranch(gid int64, name string) error {
 	branchName := fmt.Sprintf("%sg%d-%s", branchPrefix, gid, name)
-	_, err = grace.RunTimed(defaultExecTimeout, "git", "checkout", "-b", branchName)
+	_, err := grace.RunTimed(defaultExecTimeout, "git", "checkout", "-b", branchName)
 	return err
 }

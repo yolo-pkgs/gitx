@@ -44,13 +44,22 @@ func main() {
 					}
 
 					if c.Bool("random") {
-						return createRandomBranch()
+						gid, err := writeNewBranchGID()
+						if err != nil {
+							return err
+						}
+						return createRandomBranch(gid)
 					}
 					branchName := c.Args().First()
 					if branchName == "" {
 						return listBranches()
 					}
-					return createGlobalBranch(branchName)
+
+					gid, err := writeNewBranchGID()
+					if err != nil {
+						return err
+					}
+					return createGlobalBranch(gid, branchName)
 				},
 			},
 		},
