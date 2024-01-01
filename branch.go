@@ -52,7 +52,7 @@ func defaultBranch() (string, error) {
 	return candidates[0], nil
 }
 
-func onlyFromDefaultBranch() (bool, error) {
+func fromDefaultBranch() (bool, error) {
 	current, err := currentBranch()
 	if err != nil {
 		return false, err
@@ -169,8 +169,12 @@ func createRandomBranch(gid int64) error {
 	return err
 }
 
-func createGlobalBranch(gid int64, name string) error {
-	branchName := fmt.Sprintf("%sg%d-%s", branchPrefix, gid, name)
+func createGlobalBranch(gid int64, name string, fromDefault bool) error {
+	modifier := "f"
+	if fromDefault {
+		modifier = "g"
+	}
+	branchName := fmt.Sprintf("%s%s%d-%s", branchPrefix, modifier, gid, name)
 	_, err := grace.RunTimed(defaultExecTimeout, "git", "checkout", "-b", branchName)
 	return err
 }
