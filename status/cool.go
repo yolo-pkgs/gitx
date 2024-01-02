@@ -33,7 +33,7 @@ func lastCommitSummary() (string, error) {
 	commitTime := time.Unix(unixTime, 0)
 	ago := time.Since(commitTime)
 
-	return fmt.Sprintf("Last commit: %s ago", ago.Round(time.Minute)), nil
+	return fmt.Sprintf("Last commit: %s ago\n", ago.Round(time.Second)), nil
 }
 
 func CoolStatus() (string, error) {
@@ -53,7 +53,7 @@ func CoolStatus() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed counting left-right: %w", err)
 	}
-	leftRightDefault := fmt.Sprintf("DEFAULT: ahead %d; behind %d", left, right)
+	leftRightDefault := fmt.Sprintf("DEFAULT:\tahead %d; behind %d", left, right)
 
 	// ahead/behind @{push}
 	var leftRightPushTarget string
@@ -66,9 +66,9 @@ func CoolStatus() (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("failed counting left-right: %w", err)
 		}
-		leftRightPushTarget = fmt.Sprintf("TARGET: ahead %d; behind %d", left, right)
+		leftRightPushTarget = fmt.Sprintf("REMOTE:\tahead %d; behind %d", left, right)
 	} else {
-		leftRightPushTarget = "TARGET: does not exist"
+		leftRightPushTarget = "REMOTE:\tdoes not exist"
 	}
 
 	// check if merged
