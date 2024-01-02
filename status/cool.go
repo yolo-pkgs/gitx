@@ -2,6 +2,7 @@ package status
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -13,7 +14,14 @@ import (
 
 const defaultExecTimeout = 10 * time.Second
 
-func simpleStatus() {
+func pushTargetExists(branch string) (bool, error) {
+	output, err := grace.RunTimed(defaultExecTimeout, "git", "branch", "-r", "--no-color")
+	if err != nil {
+		return false, fmt.Errorf("failed getting remote branches: %w", err)
+	}
+	remotes := strings.Fields(output)
+
+	return slices.Contains(remotes, branch), nil
 }
 
 func CoolStatus() (string, error) {
@@ -23,35 +31,35 @@ func CoolStatus() (string, error) {
 		return "", fmt.Errorf("failed getting simple status: %w", err)
 	}
 
-	current, err := generic.CurrentBranch()
+	current, defaultBranch, err := generic.FetchCurrentDefault()
 	if err != nil {
-		return "", fmt.Errorf("failed getting current branch: %w", err)
+		return "", err
 	}
 
-	defaultBranch, err := generic.FetchDefault(current)
-	if err != nil {
-		return "", fmt.Errorf("failed fetching default branch: %w", err)
-	}
-
-	// behind/ahead
-	behindAhead, err := grace.RunTimed(
-		defaultExecTimeout,
-		"git",
-		"rev-list",
-		"--left-right",
-		"--count",
-		fmt.Sprintf("%s...%s", defaultBranch, defaultBranch),
-	)
+	// ahead/behind default branch
+	left, right, err := generic.LeftRight("@", defaultBranch)
 	if err != nil {
 		return "", fmt.Errorf("failed counting left-right: %w", err)
 	}
-	behindAheadF := strings.Fields(behindAhead)
-	behind := behindAheadF[0]
-	ahead := behindAheadF[1]
-	behindAheadOut := fmt.Sprintf("Behind %s commit; Ahead %s commit", behind, ahead)
+	leftRightDefault := fmt.Sprintf("DEFAULT: ahead %d; behind %d", left, right)
+
+	// ahead/behind @{push}
+	var leftRightPushTarget string
+	pushExists, err := pushTargetExists(current)
+	if err != nil {
+		return "", err
+	}
+	if pushExists {
+		left, right, err = generic.LeftRight("@", "@{push}")
+		if err != nil {
+			return "", fmt.Errorf("failed counting left-right: %w", err)
+		}
+		leftRightPushTarget = fmt.Sprintf("TARGET: ahead %d; behind %d", left, right)
+	} else {
+		leftRightPushTarget = "TARGET: does not exist"
+	}
 
 	// check if merged
-	// git branch --merged | grep "${CURRENT}"
 	mergedRaw, err := grace.RunTimed(defaultExecTimeout, "git", "branch", "--merged")
 	if err != nil {
 		return "", fmt.Errorf("failed getting merged status: %w", err)
@@ -65,5 +73,5 @@ func CoolStatus() (string, error) {
 		mergedMsg = "Branch is not merged."
 	}
 
-	return strings.Join([]string{simple, behindAheadOut, mergedMsg}, "\n"), nil
+	return strings.Join([]string{simple, mergedMsg, leftRightDefault, leftRightPushTarget}, "\n"), nil
 }
