@@ -24,6 +24,18 @@ func pushTargetExists(branch string) (bool, error) {
 	return slices.Contains(remotes, fmt.Sprintf("origin/%s", branch)), nil
 }
 
+func lastCommitSummary() (string, error) {
+	unixTime, err := generic.LastCommitUnixtime()
+	if err != nil {
+		return "", fmt.Errorf("failed getting last commit unix: %w", err)
+	}
+
+	commitTime := time.Unix(unixTime, 0)
+	ago := time.Since(commitTime)
+
+	return fmt.Sprintf("Last commit: %s ago", ago), nil
+}
+
 func CoolStatus() (string, error) {
 	// simple status
 	simple, err := grace.RunTimed(defaultExecTimeout, "git", "status", "--show-stash")
@@ -73,5 +85,16 @@ func CoolStatus() (string, error) {
 		mergedMsg = "Branch is not merged."
 	}
 
-	return strings.Join([]string{simple, mergedMsg, leftRightDefault, leftRightPushTarget}, "\n"), nil
+	lastCommitSum, err := lastCommitSummary()
+	if err != nil {
+		return "", fmt.Errorf("failed getting last commit summary: %w", err)
+	}
+
+	return strings.Join([]string{
+		simple,
+		mergedMsg,
+		leftRightDefault,
+		leftRightPushTarget,
+		lastCommitSum,
+	}, "\n"), nil
 }
