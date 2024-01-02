@@ -21,7 +21,7 @@ func pushTargetExists(branch string) (bool, error) {
 	}
 	remotes := strings.Fields(output)
 
-	return slices.Contains(remotes, branch), nil
+	return slices.Contains(remotes, fmt.Sprintf("origin/%s", branch)), nil
 }
 
 func CoolStatus() (string, error) {
