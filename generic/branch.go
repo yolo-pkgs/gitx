@@ -53,21 +53,29 @@ func FetchCurrent() error {
 	return nil
 }
 
-func FetchDefault() (string, error) {
+// TODO: handle non-fast-forward error
+func FetchDefault(current string) (string, error) {
 	// timeout 5 git fetch origin "${BRANCH}":"${BRANCH}"
 	defaultBranch, err := DefaultBranch()
 	if err != nil {
 		return "", fmt.Errorf("failed detecting default branch: %w", err)
 	}
 
-	if _, err := grace.RunTimed(
-		defaultExecTimeout,
-		"git",
-		"fetch",
-		"origin",
-		fmt.Sprintf("%s:%s", defaultBranch, defaultBranch),
-	); err != nil {
-		return "", fmt.Errorf("failed direct fetch of default branch: %w", err)
+	if defaultBranch == current {
+		_, err := grace.RunTimed(defaultExecTimeout, "git", "pull")
+		if err != nil {
+			return "", fmt.Errorf("failed pulling default branch, which is checked out: %w", err)
+		}
+	} else {
+		if _, err := grace.RunTimed(
+			defaultExecTimeout,
+			"git",
+			"fetch",
+			"origin",
+			fmt.Sprintf("%s:%s", defaultBranch, defaultBranch),
+		); err != nil {
+			return "", fmt.Errorf("failed direct fetch of default branch: %w", err)
+		}
 	}
 
 	return defaultBranch, nil
@@ -83,7 +91,7 @@ func FetchCurrentDefault() (string, string, error) {
 		return "", "", fmt.Errorf("failed fetching current branch: %w", err)
 	}
 
-	defaultBranch, err := FetchDefault()
+	defaultBranch, err := FetchDefault(current)
 	if err != nil {
 		return "", "", fmt.Errorf("failed fetching default branch: %w", err)
 	}
