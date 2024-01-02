@@ -33,7 +33,7 @@ func lastCommitSummary() (string, error) {
 	commitTime := time.Unix(unixTime, 0)
 	ago := time.Since(commitTime)
 
-	return fmt.Sprintf("Last commit: %s ago\n", ago.Round(time.Second)), nil
+	return fmt.Sprintf("\nLast commit: %s ago", ago.Round(time.Second)), nil
 }
 
 func CoolStatus() (string, error) {
