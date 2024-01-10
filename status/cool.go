@@ -72,7 +72,7 @@ func CoolStatus() (string, error) {
 	}
 
 	// check if merged
-	mergedRaw, err := grace.RunTimed(defaultExecTimeout, "git", "branch", "--merged")
+	mergedRaw, err := grace.RunTimed(defaultExecTimeout, "git", "branch", "--merged", defaultBranch)
 	if err != nil {
 		return "", fmt.Errorf("failed getting merged status: %w", err)
 	}
