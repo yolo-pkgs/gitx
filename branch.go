@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	branchPrefix       = "samira/"
+	branchPrefix       = "s"
 	gitxBranchFilePath = "sys/.gitx_branch"
 )
 
@@ -124,14 +124,11 @@ func randomWord() (string, error) {
 	return strings.TrimSpace(output), nil
 }
 
-func getModifier(fromDefault, xMark bool) string {
-	if xMark {
-		return "x"
-	}
+func getModifier(fromDefault, _ bool) string {
 	if fromDefault {
-		return "g"
+		return ""
 	}
-	return "f"
+	return "x"
 }
 
 func makeSourceMark(modifier string) (string, error) {
@@ -149,29 +146,29 @@ func makeSourceMark(modifier string) (string, error) {
 
 func createRandomBranch(gid int64, fromDefault, xMark bool) error {
 	modifier := getModifier(fromDefault, xMark)
-	sourceMark, err := makeSourceMark(modifier)
-	if err != nil {
-		return err
-	}
+	// sourceMark, err := makeSourceMark(modifier)
+	// if err != nil {
+	// 	return err
+	// }
 
-	randomWord, err := randomWord()
-	if err != nil {
-		return fmt.Errorf("failed to generate random word: %w", err)
-	}
+	// randomWord, err := randomWord()
+	// if err != nil {
+	// 	return fmt.Errorf("failed to generate random word: %w", err)
+	// }
 
-	branchName := fmt.Sprintf("%s%s%d%s-%s", branchPrefix, modifier, gid, sourceMark, randomWord)
-	_, err = grace.RunTimed(defaultExecTimeout, "git", "checkout", "-b", branchName)
+	branchName := fmt.Sprintf("%s%d%s", branchPrefix, gid, modifier)
+	_, err := grace.RunTimed(defaultExecTimeout, "git", "checkout", "-b", branchName)
 	return err
 }
 
 func createGlobalBranch(gid int64, name string, fromDefault, xMark bool) error {
 	modifier := getModifier(fromDefault, xMark)
-	sourceMark, err := makeSourceMark(modifier)
-	if err != nil {
-		return err
-	}
+	// sourceMark, err := makeSourceMark(modifier)
+	// if err != nil {
+	// 	return err
+	// }
 
-	branchName := fmt.Sprintf("%s%s%d%s-%s", branchPrefix, modifier, gid, sourceMark, name)
-	_, err = grace.RunTimed(defaultExecTimeout, "git", "checkout", "-b", branchName)
+	branchName := fmt.Sprintf("%s%d%s-%s", branchPrefix, gid, modifier, name)
+	_, err := grace.RunTimed(defaultExecTimeout, "git", "checkout", "-b", branchName)
 	return err
 }
