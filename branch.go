@@ -124,7 +124,7 @@ func randomWord() (string, error) {
 	return strings.TrimSpace(output), nil
 }
 
-func getModifier(fromDefault, _ bool) string {
+func getModifier(fromDefault bool) string {
 	if fromDefault {
 		return ""
 	}
@@ -144,8 +144,8 @@ func makeSourceMark(modifier string) (string, error) {
 	return "", nil
 }
 
-func createRandomBranch(gid int64, fromDefault, xMark bool) error {
-	modifier := getModifier(fromDefault, xMark)
+func createRandomBranch(gid int64, fromDefault bool) error {
+	modifier := getModifier(fromDefault)
 	// sourceMark, err := makeSourceMark(modifier)
 	// if err != nil {
 	// 	return err
@@ -161,8 +161,8 @@ func createRandomBranch(gid int64, fromDefault, xMark bool) error {
 	return err
 }
 
-func createGlobalBranch(gid int64, name string, fromDefault, xMark bool) error {
-	modifier := getModifier(fromDefault, xMark)
+func createGlobalBranch(gid int64, name string, fromDefault bool) error {
+	modifier := getModifier(fromDefault)
 	// sourceMark, err := makeSourceMark(modifier)
 	// if err != nil {
 	// 	return err

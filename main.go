@@ -49,26 +49,10 @@ func main() {
 
 					branchName := c.Args().First()
 					if branchName == "" {
-						return createRandomBranch(gid, fromDefault, false)
+						return createRandomBranch(gid, fromDefault)
 					}
 
-					return createGlobalBranch(gid, branchName, fromDefault, false)
-				},
-			},
-			{
-				Name:  "randx",
-				Usage: "create random experimental branch",
-				Action: func(_ *cli.Context) error {
-					fromDefault, err := fromDefaultBranch()
-					if err != nil {
-						return err
-					}
-
-					gid, err := writeNewBranchGID()
-					if err != nil {
-						return err
-					}
-					return createRandomBranch(gid, fromDefault, true)
+					return createGlobalBranch(gid, branchName, fromDefault)
 				},
 			},
 			{
