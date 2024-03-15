@@ -31,7 +31,7 @@ func rapidPush() error {
 				return fmt.Errorf("failed to push: %w", err)
 			}
 
-			notifySend("git pushed!")
+			notifySend("pushed")
 
 			return nil
 		}
