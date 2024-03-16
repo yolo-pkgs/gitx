@@ -53,7 +53,7 @@ func CoolStatus() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed counting left-right: %w", err)
 	}
-	leftRightDefault := fmt.Sprintf("DEFAULT BRANCH: ahead %d; behind %d", left, right)
+	leftRightDefault := fmt.Sprintf("DEFAULT BRANCH:\nahead %d; behind %d", left, right)
 
 	// ahead/behind @{push}
 	var leftRightPushTarget string
@@ -66,9 +66,9 @@ func CoolStatus() (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("failed counting left-right: %w", err)
 		}
-		leftRightPushTarget = fmt.Sprintf("REMOTE: ahead %d; behind %d", left, right)
+		leftRightPushTarget = fmt.Sprintf("REMOTE:\nahead %d; behind %d", left, right)
 	} else {
-		leftRightPushTarget = "REMOTE: does not exist"
+		leftRightPushTarget = "REMOTE:\ndoes not exist"
 	}
 
 	// check if merged
