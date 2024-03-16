@@ -41,6 +41,6 @@ func rapidPush() error {
 }
 
 func gitPush() error {
-	_, err := grace.RunTimed(20*time.Second, "git", "push", "--quiet")
+	_, err := grace.RunTimed(20*time.Second, nil, "git", "push", "--quiet")
 	return err
 }

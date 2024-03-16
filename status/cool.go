@@ -15,11 +15,11 @@ import (
 const defaultExecTimeout = 10 * time.Second
 
 func pushTargetExists(branch string) (bool, error) {
-	output, err := grace.RunTimed(defaultExecTimeout, "git", "branch", "-r", "--no-color")
+	output, err := grace.RunTimed(defaultExecTimeout, nil, "git", "branch", "-r", "--no-color")
 	if err != nil {
 		return false, fmt.Errorf("failed getting remote branches: %w", err)
 	}
-	remotes := strings.Fields(output)
+	remotes := strings.Fields(output.Combine())
 
 	return slices.Contains(remotes, fmt.Sprintf("origin/%s", branch)), nil
 }
@@ -38,7 +38,7 @@ func lastCommitSummary() (string, error) {
 
 func CoolStatus() (string, error) {
 	// simple status
-	simple, err := grace.RunTimed(defaultExecTimeout, "git", "status", "--show-stash")
+	simple, err := grace.RunTimed(defaultExecTimeout, nil, "git", "status", "--show-stash")
 	if err != nil {
 		return "", fmt.Errorf("failed getting simple status: %w", err)
 	}
@@ -72,11 +72,11 @@ func CoolStatus() (string, error) {
 	}
 
 	// check if merged
-	mergedRaw, err := grace.RunTimed(defaultExecTimeout, "git", "branch", "--merged", defaultBranch)
+	mergedRaw, err := grace.RunTimed(defaultExecTimeout, nil, "git", "branch", "--merged", defaultBranch)
 	if err != nil {
 		return "", fmt.Errorf("failed getting merged status: %w", err)
 	}
-	merged := strings.Fields(mergedRaw)
+	merged := strings.Fields(mergedRaw.Combine())
 
 	var mergedMsg string
 	if lo.Contains(merged, current) {
@@ -91,7 +91,7 @@ func CoolStatus() (string, error) {
 	}
 
 	return strings.Join([]string{
-		simple,
+		simple.Combine(),
 		mergedMsg,
 		leftRightDefault,
 		leftRightPushTarget,

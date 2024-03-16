@@ -10,6 +10,7 @@ import (
 	"github.com/yolo-pkgs/grace"
 
 	"github.com/yolo-pkgs/gitx/status"
+	"github.com/yolo-pkgs/gitx/tag"
 )
 
 const defaultExecTimeout = 10 * time.Second
@@ -69,6 +70,18 @@ func main() {
 					} else {
 						fmt.Println(statusMsg)
 					}
+					return nil
+				},
+			},
+			{
+				Name:    "tagnew",
+				Usage:   "create new version tag",
+				Aliases: []string{"tn"},
+				Action: func(c *cli.Context) error {
+					if err := tag.Patch(); err != nil {
+						return err
+					}
+
 					return nil
 				},
 			},

@@ -14,19 +14,19 @@ import (
 const defaultExecTimeout = 10 * time.Second
 
 func CurrentBranch() (string, error) {
-	output, err := grace.RunTimed(defaultExecTimeout, "git", "branch", "--show-current")
+	output, err := grace.RunTimed(defaultExecTimeout, nil, "git", "branch", "--show-current")
 	if err != nil {
 		return "", fmt.Errorf("failed to get current branch: %w", err)
 	}
-	return strings.TrimSpace(output), nil
+	return strings.TrimSpace(output.Combine()), nil
 }
 
 func DefaultBranch() (string, error) {
-	output, err := grace.RunTimed(defaultExecTimeout, "git", "branch")
+	output, err := grace.RunTimed(defaultExecTimeout, nil, "git", "branch")
 	if err != nil {
 		return "", fmt.Errorf("failed to run git branch: %w", err)
 	}
-	fields := strings.Fields(output)
+	fields := strings.Fields(output.Combine())
 
 	usualDefaults := []string{"release", "master", "main"}
 	candidates := lo.Intersect(fields, usualDefaults)
@@ -43,6 +43,7 @@ func DefaultBranch() (string, error) {
 func FetchCurrent() error {
 	if _, err := grace.RunTimed(
 		defaultExecTimeout,
+		nil,
 		"git",
 		"fetch",
 		"origin",
@@ -62,13 +63,14 @@ func FetchDefault(current string) (string, error) {
 	}
 
 	if defaultBranch == current {
-		_, err := grace.RunTimed(defaultExecTimeout, "git", "pull")
+		_, err := grace.RunTimed(defaultExecTimeout, nil, "git", "pull")
 		if err != nil {
 			return "", fmt.Errorf("failed pulling default branch, which is checked out: %w", err)
 		}
 	} else {
 		if _, err := grace.RunTimed(
 			defaultExecTimeout,
+			nil,
 			"git",
 			"fetch",
 			"origin",
@@ -100,8 +102,9 @@ func FetchCurrentDefault() (string, string, error) {
 }
 
 func LeftRight(leftRef, rightRef string) (int64, int64, error) {
-	behindAhead, err := grace.RunTimed(
+	output, err := grace.RunTimed(
 		defaultExecTimeout,
+		nil,
 		"git",
 		"rev-list",
 		"--left-right",
@@ -111,6 +114,9 @@ func LeftRight(leftRef, rightRef string) (int64, int64, error) {
 	if err != nil {
 		return 0, 0, fmt.Errorf("failed counting left-right: %w", err)
 	}
+
+	behindAhead := output.Combine()
+
 	behindAheadF := strings.Fields(behindAhead)
 	if len(behindAhead) < 2 {
 		return 0, 0, errors.New("behindAhead fields < 2")

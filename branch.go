@@ -37,7 +37,7 @@ func fromDefaultBranch() (bool, error) {
 }
 
 func fetchAll() error {
-	_, err := grace.RunTimed(defaultExecTimeout, "git", "fetch", "--all")
+	_, err := grace.RunTimed(defaultExecTimeout, nil, "git", "fetch", "--all")
 	return err
 }
 
@@ -46,7 +46,7 @@ func listBranches() error {
 		return err
 	}
 
-	output, err := grace.RunTimed(defaultExecTimeout, "git", "branch", "--all")
+	output, err := grace.RunTimed(defaultExecTimeout, nil, "git", "branch", "--all")
 	if err != nil {
 		return err
 	}
@@ -112,6 +112,7 @@ func randomWord() (string, error) {
 	// TODO: wordlist to reliable place
 	output, err := grace.RunTimed(
 		defaultExecTimeout,
+		nil,
 		"shuf",
 		"-n",
 		"1",
@@ -121,7 +122,7 @@ func randomWord() (string, error) {
 		return "", err
 	}
 
-	return strings.TrimSpace(output), nil
+	return strings.TrimSpace(output.Combine()), nil
 }
 
 func getModifier(fromDefault bool) string {
@@ -157,7 +158,7 @@ func createRandomBranch(gid int64, fromDefault bool) error {
 	// }
 
 	branchName := fmt.Sprintf("%s%d%s", branchPrefix, gid, modifier)
-	_, err := grace.RunTimed(defaultExecTimeout, "git", "checkout", "-b", branchName)
+	_, err := grace.RunTimed(defaultExecTimeout, nil, "git", "checkout", "-b", branchName)
 	return err
 }
 
@@ -169,6 +170,6 @@ func createGlobalBranch(gid int64, name string, fromDefault bool) error {
 	// }
 
 	branchName := fmt.Sprintf("%s%d%s-%s", branchPrefix, gid, modifier, name)
-	_, err := grace.RunTimed(defaultExecTimeout, "git", "checkout", "-b", branchName)
+	_, err := grace.RunTimed(defaultExecTimeout, nil, "git", "checkout", "-b", branchName)
 	return err
 }
