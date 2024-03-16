@@ -37,12 +37,6 @@ func lastCommitSummary() (string, error) {
 }
 
 func CoolStatus() (string, error) {
-	// simple status
-	simple, err := grace.RunTimed(defaultExecTimeout, nil, "git", "status", "--show-stash")
-	if err != nil {
-		return "", fmt.Errorf("failed getting simple status: %w", err)
-	}
-
 	current, defaultBranch, err := generic.FetchCurrentDefault()
 	if err != nil {
 		return "", err
@@ -91,7 +85,6 @@ func CoolStatus() (string, error) {
 	}
 
 	return strings.Join([]string{
-		simple.Combine(),
 		mergedMsg,
 		leftRightDefault,
 		leftRightPushTarget,
