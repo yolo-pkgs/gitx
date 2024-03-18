@@ -9,10 +9,13 @@ import (
 	"github.com/yolo-pkgs/gitx/generic"
 )
 
-const deadlineTimeoutSeconds = 6
+const (
+	waitForCommitSeconds = 5
+	watchForCommitsInLastSeconds = 180
+)
 
 func rapidPush() error {
-	deadline := time.NewTimer(deadlineTimeoutSeconds * time.Second)
+	deadline := time.NewTimer(waitForCommitSeconds * time.Second)
 
 	for {
 		select {
@@ -26,7 +29,7 @@ func rapidPush() error {
 			return err
 		}
 
-		if time.Now().Unix()-lastCommitTime < deadlineTimeoutSeconds+1 {
+		if time.Now().Unix()-lastCommitTime < watchForCommitsInLastSeconds {
 			if err := gitPush(); err != nil {
 				return fmt.Errorf("failed to push: %w", err)
 			}
@@ -36,7 +39,7 @@ func rapidPush() error {
 			return nil
 		}
 
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 	}
 }
 
