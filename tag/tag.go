@@ -20,7 +20,7 @@ func create(tag string, prerel bool) error {
 		tag = tag + `-rc-` + now.Format(`2006.01.02--15.04.05`)
 	}
 
-	_, err := grace.RunTimedSh(timeout, fmt.Sprintf(`git tag -m "fix: %s"`, tag))
+	_, err := grace.RunTimedSh(timeout, fmt.Sprintf(`git tag %s -m "fix: %s"`, tag, tag))
 	if err != nil {
 		return fmt.Errorf("failed tagging: %w", err)
 	}
