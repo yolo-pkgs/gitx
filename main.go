@@ -78,7 +78,19 @@ func main() {
 				Usage:   "create new version tag",
 				Aliases: []string{"tn"},
 				Action: func(c *cli.Context) error {
-					if err := tag.Patch(); err != nil {
+					if err := tag.Patch(false); err != nil {
+						return err
+					}
+
+					return nil
+				},
+			},
+			{
+				Name:    "stage",
+				Usage:   "create new stage tag",
+				Aliases: []string{"tn"},
+				Action: func(c *cli.Context) error {
+					if err := tag.Patch(true); err != nil {
 						return err
 					}
 
