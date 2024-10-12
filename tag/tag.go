@@ -2,7 +2,6 @@ package tag
 
 import (
 	"fmt"
-	"log/slog"
 	"regexp"
 	"strconv"
 	"strings"
@@ -83,7 +82,7 @@ func create(tag string, prerel bool) error {
 	// 	return fmt.Errorf("failed tagging: %w", err)
 	// }
 
-	slog.Info("tag created", slog.String("tag", tag))
+	fmt.Printf("tag created: %s\n", tag)
 
 	return nil
 }
@@ -106,7 +105,7 @@ func Patch(prerelease bool) error {
 
 	tags := strings.Fields(output)
 	if len(tags) == 0 {
-		slog.Info("no tags found")
+		fmt.Println("no tags found")
 		return create("v0.0.1", prerelease)
 	}
 
@@ -125,12 +124,12 @@ func Patch(prerelease bool) error {
 	}
 
 	if len(releaseTags) == 0 {
-		slog.Info("no valid go version tags found")
+		fmt.Println("no valid go version tags found")
 		return create("v0.0.1", prerelease)
 	}
 
 	lastRel := lastReleaseTag(releaseTags)
-	fmt.Printf("last release tag: %s", lastRel.String())
+	fmt.Printf("last release tag: %s\n", lastRel.String())
 
 	newTag := fmt.Sprintf("v%d.%d.%d", lastRel.Major, lastRel.Minor, lastRel.Patch+1)
 	return create(newTag, prerelease)
