@@ -1,18 +1,76 @@
 package tag
 
 import (
-	"errors"
 	"fmt"
 	"log/slog"
-	"sort"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
-	"github.com/hashicorp/go-version"
+	"github.com/samber/lo"
 	"github.com/yolo-pkgs/grace"
 )
 
 const timeout = 5 * time.Second
+
+type Version struct {
+	Major int64
+	Minor int64
+	Patch int64
+}
+
+func (v Version) String() string {
+	return fmt.Sprintf("v%d.%d.%d", v.Major, v.Minor, v.Patch)
+}
+
+func lastReleaseTag(versions []Version) Version {
+	majors := lo.Map(versions, func(item Version, _ int) int64 { return item.Major })
+	maxMajor := lo.Max(majors)
+	tagsWithMaxMajor := lo.Filter(versions, func(item Version, _ int) bool { return item.Major == maxMajor })
+
+	minors := lo.Map(tagsWithMaxMajor, func(item Version, _ int) int64 { return item.Minor })
+	maxMinor := lo.Max(minors)
+	tagsWithMaxMinor := lo.Filter(tagsWithMaxMajor, func(item Version, _ int) bool { return item.Minor == maxMinor })
+
+	patches := lo.Map(tagsWithMaxMinor, func(item Version, _ int) int64 { return item.Patch })
+	maxPatch := lo.Max(patches)
+
+	return Version{
+		Major: maxMajor,
+		Minor: maxMinor,
+		Patch: maxPatch,
+	}
+}
+
+func parseTag(tag string) (Version, bool) {
+	tag = strings.TrimPrefix(tag, "v")
+	fields := strings.Split(tag, ".")
+	if len(fields) != 3 {
+		return Version{}, false
+	}
+
+	major, err := strconv.ParseInt(fields[0], 10, 64)
+	if err != nil {
+		return Version{}, false
+	}
+
+	minor, err := strconv.ParseInt(fields[1], 10, 64)
+	if err != nil {
+		return Version{}, false
+	}
+
+	patch, err := strconv.ParseInt(fields[2], 10, 64)
+	if err != nil {
+		return Version{}, false
+	}
+
+	return Version{
+		Major: major,
+		Minor: minor,
+		Patch: patch,
+	}, true
+}
 
 func create(tag string, prerel bool) error {
 	now := time.Now().UTC()
@@ -31,7 +89,12 @@ func create(tag string, prerel bool) error {
 }
 
 func Patch(prerelease bool) error {
-	_, err := grace.RunTimedSh(timeout, "git fetch --tags")
+	r, err := regexp.Compile(`^v\d+\.\d+\.\d+$`)
+	if err != nil {
+		return fmt.Errorf("failed to compile release tag regex: %w", err)
+	}
+
+	_, err = grace.RunTimedSh(timeout, "git fetch --tags")
 	if err != nil {
 		return fmt.Errorf("fail fetching tags: %w", err)
 	}
@@ -47,41 +110,28 @@ func Patch(prerelease bool) error {
 		return create("v0.0.1", prerelease)
 	}
 
-	versions := make([]*version.Version, 0)
-
+	releaseTags := make([]Version, 0)
 	for _, tag := range tags {
-		v, err := version.NewVersion(tag)
-		if err != nil {
+		if !r.MatchString(tag) {
 			continue
 		}
-		versions = append(versions, v)
+
+		parsed, ok := parseTag(tag)
+		if !ok {
+			continue
+		}
+
+		releaseTags = append(releaseTags, parsed)
 	}
 
-	if len(versions) == 0 {
+	if len(releaseTags) == 0 {
 		slog.Info("no valid go version tags found")
 		return create("v0.0.1", prerelease)
 	}
 
-	sort.Sort(version.Collection(versions))
-	lastVersion := versions[len(versions)-1]
+	lastRel := lastReleaseTag(releaseTags)
+	fmt.Printf("last release tag: %s", lastRel.String())
 
-	segments := lastVersion.Segments64()
-	if len(segments) != 3 {
-		return errors.New("number of segments in last version != 3")
-	}
-
-	major := segments[0]
-	minor := segments[1]
-	patch := segments[2]
-
-	fmt.Printf("last: %s\n", lastVersion.String())
-
-	if lastVersion.Prerelease() == "" {
-		patch++
-	} else if !prerelease {
-		patch++
-	}
-
-	newTag := fmt.Sprintf("v%d.%d.%d", major, minor, patch)
+	newTag := fmt.Sprintf("v%d.%d.%d", lastRel.Major, lastRel.Minor, lastRel.Patch+1)
 	return create(newTag, prerelease)
 }
