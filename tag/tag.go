@@ -70,6 +70,16 @@ func Patch(prerelease bool) error {
 		return errors.New("number of segments in last version != 3")
 	}
 
-	newTag := fmt.Sprintf("v%d.%d.%d", segments[0], segments[1], segments[2]+1)
+	major := segments[0]
+	minor := segments[1]
+	patch := segments[2]
+
+	if lastVersion.Prerelease() == "" {
+		patch++
+	} else if !prerelease {
+		patch++
+	}
+
+	newTag := fmt.Sprintf("v%d.%d.%d", major, minor, patch)
 	return create(newTag, prerelease)
 }
