@@ -20,10 +20,10 @@ func create(tag string, prerel bool) error {
 		tag = tag + `-rc-` + now.Format(`2006.01.02--15.04.05`)
 	}
 
-	_, err := grace.RunTimedSh(timeout, fmt.Sprintf(`git tag %s -m "fix: %s"`, tag, tag))
-	if err != nil {
-		return fmt.Errorf("failed tagging: %w", err)
-	}
+	// _, err := grace.RunTimedSh(timeout, fmt.Sprintf(`git tag %s -m "fix: %s"`, tag, tag))
+	// if err != nil {
+	// 	return fmt.Errorf("failed tagging: %w", err)
+	// }
 
 	slog.Info("tag created", slog.String("tag", tag))
 
@@ -73,6 +73,8 @@ func Patch(prerelease bool) error {
 	major := segments[0]
 	minor := segments[1]
 	patch := segments[2]
+
+	fmt.Printf("last: %s\n", lastVersion.String())
 
 	if lastVersion.Prerelease() == "" {
 		patch++
