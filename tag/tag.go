@@ -78,6 +78,8 @@ func Patch(prerelease bool) error {
 
 	if lastVersion.Prerelease() == "" {
 		patch++
+	} else if !prerelease {
+		patch++
 	}
 
 	newTag := fmt.Sprintf("v%d.%d.%d", major, minor, patch)
