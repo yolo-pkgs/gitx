@@ -3,7 +3,6 @@ module github.com/yolo-pkgs/gitx
 go 1.23
 
 require (
-	github.com/hashicorp/go-version v1.7.0
 	github.com/samber/lo v1.47.0
 	github.com/urfave/cli/v2 v2.27.4
 	github.com/yolo-pkgs/grace v0.0.13
