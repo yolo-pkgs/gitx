@@ -28,7 +28,7 @@ func DefaultBranch() (string, error) {
 	}
 	fields := strings.Fields(output.Combine())
 
-	usualDefaults := []string{"release", "master", "main"}
+	usualDefaults := []string{"develop"}
 	candidates := lo.Intersect(fields, usualDefaults)
 	if len(candidates) == 0 {
 		return "", errors.New("no default branch found")
