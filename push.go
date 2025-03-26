@@ -13,7 +13,7 @@ import (
 
 const (
 	localGitTimeout              = 3 * time.Second
-	pushTimeout                  = 60 * time.Second
+	pushTimeout                  = 90 * time.Second
 	waitForCommit                = 3 * time.Second
 	watchForCommitsInLastSeconds = 60
 )
