@@ -19,6 +19,7 @@ func notifySend(msg string) {
 	_, _ = grace.RunTimedSh(defaultExecTimeout, fmt.Sprintf("notify-send -a gitx '%s'", msg))
 }
 
+// FIX: clean up, leave only rapid-push and branch stuff
 func main() {
 	app := &cli.App{
 		Usage: `Wildly unstable functions for git`,
