@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	waitForCommitSeconds         = 3
+	waitForCommitSeconds         = 5
 	watchForCommitsInLastSeconds = 60
 )
 
@@ -20,9 +20,7 @@ func rapidPush() error {
 	for {
 		select {
 		case <-deadline.C:
-			if err := gitPush(); err != nil {
-				return fmt.Errorf("failed to push: %w", err)
-			}
+			notifySend(fmt.Sprintf("rapid-push found no commits (waited %d seconds), exiting", waitForCommitSeconds))
 
 			return nil
 		default:
@@ -38,12 +36,12 @@ func rapidPush() error {
 				return fmt.Errorf("failed to push: %w", err)
 			}
 
-			notifySend("pushed")
+			notifySend("rapid pushed")
 
 			return nil
 		}
 
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(500 * time.Millisecond)
 	}
 }
 

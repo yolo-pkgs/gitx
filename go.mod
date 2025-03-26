@@ -2,8 +2,6 @@ module github.com/yolo-pkgs/gitx
 
 go 1.23.0
 
-toolchain go1.24.1
-
 require (
 	github.com/samber/lo v1.49.1
 	github.com/urfave/cli/v2 v2.27.6
