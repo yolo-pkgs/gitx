@@ -48,7 +48,7 @@ func CoolStatus() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed counting left-right: %w", err)
 	}
-	leftRightDefault := fmt.Sprintf("DEVELOP BRANCH:\nahead %d; behind %d", left, right)
+	leftRightDefault := fmt.Sprintf("%s BRANCH:\nahead %d; behind %d", defaultBranch, left, right)
 
 	// ahead/behind @{push}
 	var leftRightPushTarget string
