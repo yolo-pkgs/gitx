@@ -70,7 +70,7 @@ func gitPush(currentBranch string) error {
 	}
 
 	if strings.TrimSpace(out.Combine()) == "" {
-		notifySend("rp: remote branch not found, not pushing")
+		notifySend(fmt.Sprintf("rp: remote branch %s not found, not pushing", currentBranch))
 
 		return nil
 	}
