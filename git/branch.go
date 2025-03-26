@@ -3,10 +3,10 @@ package git
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
-	"github.com/samber/lo"
 	"github.com/yolo-pkgs/grace"
 )
 
@@ -25,14 +25,20 @@ func DefaultBranch(timeout time.Duration) (string, error) {
 	}
 	fields := strings.Fields(output.Combine())
 
-	usualDefaults := []string{"develop"}
-	candidates := lo.Intersect(fields, usualDefaults)
-	if len(candidates) == 0 {
-		return "", errors.New("no default branch found")
-	}
-	if len(candidates) > 1 {
-		return "", fmt.Errorf("multiple candidates for default branch found: %v", candidates)
+	var chosenDefault string
+
+	orderedDefaults := []string{"develop", "master", "main"}
+	for _, candidate := range orderedDefaults {
+		if slices.Contains(fields, candidate) {
+			chosenDefault = candidate
+
+			break
+		}
 	}
 
-	return candidates[0], nil
+	if chosenDefault == "" {
+		return "", errors.New("no default branch found")
+	}
+
+	return chosenDefault, nil
 }
