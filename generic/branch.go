@@ -7,38 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/samber/lo"
 	"github.com/yolo-pkgs/grace"
+
+	"github.com/yolo-pkgs/gitx/git"
 )
 
 const defaultExecTimeout = 10 * time.Second
-
-func CurrentBranch() (string, error) {
-	output, err := grace.RunTimed(defaultExecTimeout, nil, "git", "branch", "--show-current")
-	if err != nil {
-		return "", fmt.Errorf("failed to get current branch: %w", err)
-	}
-	return strings.TrimSpace(output.Combine()), nil
-}
-
-func DefaultBranch() (string, error) {
-	output, err := grace.RunTimed(defaultExecTimeout, nil, "git", "branch")
-	if err != nil {
-		return "", fmt.Errorf("failed to run git branch: %w", err)
-	}
-	fields := strings.Fields(output.Combine())
-
-	usualDefaults := []string{"develop"}
-	candidates := lo.Intersect(fields, usualDefaults)
-	if len(candidates) == 0 {
-		return "", errors.New("no default branch found")
-	}
-	if len(candidates) > 1 {
-		return "", fmt.Errorf("multiple candidates for default branch found: %v", candidates)
-	}
-
-	return candidates[0], nil
-}
 
 func FetchCurrent() error {
 	if _, err := grace.RunTimed(
@@ -57,7 +31,7 @@ func FetchCurrent() error {
 // TODO: handle non-fast-forward error
 func FetchDefault(current string) (string, error) {
 	// timeout 5 git fetch origin "${BRANCH}":"${BRANCH}"
-	defaultBranch, err := DefaultBranch()
+	defaultBranch, err := git.DefaultBranch(defaultExecTimeout)
 	if err != nil {
 		return "", fmt.Errorf("failed detecting default branch: %w", err)
 	}
@@ -84,7 +58,7 @@ func FetchDefault(current string) (string, error) {
 }
 
 func FetchCurrentDefault() (string, string, error) {
-	current, err := CurrentBranch()
+	current, err := git.CurrentBranch(defaultExecTimeout)
 	if err != nil {
 		return "", "", fmt.Errorf("failed getting current branch: %w", err)
 	}

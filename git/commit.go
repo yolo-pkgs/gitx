@@ -1,14 +1,15 @@
-package generic
+package git
 
 import (
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/yolo-pkgs/grace"
 )
 
-func LastCommitUnixtime() (int64, error) {
-	output, err := grace.RunTimed(defaultExecTimeout, nil, "git", "log", "-1", "--format=%ct")
+func LastCommitUnixtime(timeout time.Duration) (int64, error) {
+	output, err := grace.RunTimed(timeout, nil, "git", "log", "-1", "--format=%ct")
 	if err != nil {
 		return 0, err
 	}

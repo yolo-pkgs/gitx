@@ -10,6 +10,7 @@ import (
 	"github.com/yolo-pkgs/grace"
 
 	"github.com/yolo-pkgs/gitx/generic"
+	"github.com/yolo-pkgs/gitx/git"
 )
 
 const defaultExecTimeout = 10 * time.Second
@@ -25,7 +26,7 @@ func pushTargetExists(branch string) (bool, error) {
 }
 
 func lastCommitSummary() (string, error) {
-	unixTime, err := generic.LastCommitUnixtime()
+	unixTime, err := git.LastCommitUnixtime(defaultExecTimeout)
 	if err != nil {
 		return "", fmt.Errorf("failed getting last commit unix: %w", err)
 	}

@@ -6,10 +6,11 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/yolo-pkgs/grace"
 
-	"github.com/yolo-pkgs/gitx/generic"
+	"github.com/yolo-pkgs/gitx/git"
 	"github.com/yolo-pkgs/gitx/system"
 )
 
@@ -19,12 +20,12 @@ const (
 )
 
 func fromDefaultBranch() (bool, error) {
-	current, err := generic.CurrentBranch()
+	current, err := git.CurrentBranch(10 * time.Second)
 	if err != nil {
 		return false, err
 	}
 
-	def, err := generic.DefaultBranch()
+	def, err := git.DefaultBranch(10 * time.Second)
 	if err != nil {
 		return false, err
 	}
@@ -134,7 +135,7 @@ func getModifier(fromDefault bool) string {
 
 func makeSourceMark(modifier string) (string, error) {
 	if modifier == "f" || modifier == "x" {
-		current, err := generic.CurrentBranch()
+		current, err := git.CurrentBranch(10 * time.Second)
 		if err != nil {
 			return "", err
 		}
