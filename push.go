@@ -76,13 +76,15 @@ func gitPush(currentBranch string) error {
 	}
 
 	out, err = grace.RunTimed(pushTimeout, nil, "git", "push", "--quiet", "origin", currentBranch)
-	if errors.Is(err, grace.ErrTimeout) {
+	if errors.Is(err, grace.ErrFailToKill) {
+		notifySend(fmt.Sprintf("rp: timeout reached, but failed to kill (pushing %s)", currentBranch))
+	} else if errors.Is(err, grace.ErrTimeout) {
 		notifySend(fmt.Sprintf("rp: push timeout: %s", currentBranch))
-
-		return err
 	} else if err != nil {
 		notifySend("rp: error executing git push")
+	}
 
+	if err != nil {
 		return err
 	}
 
