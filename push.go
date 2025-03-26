@@ -23,7 +23,7 @@ func rapidPush() error {
 
 	currentBranch, err := git.CurrentBranch(localGitTimeout)
 	if err != nil {
-		notifySend("rapid-push: failed to get current branch")
+		notifySend("rp: failed to get current branch")
 
 		return err
 	}
@@ -31,7 +31,7 @@ func rapidPush() error {
 	for {
 		select {
 		case <-deadline.C:
-			notifySend(fmt.Sprintf("rapid-push: found no commits (waited %d seconds)", waitForCommit))
+			notifySend(fmt.Sprintf("rp: found no commits (waited %d seconds)", waitForCommit))
 
 			return nil
 		default:
@@ -39,7 +39,7 @@ func rapidPush() error {
 
 		lastCommitTime, err := git.LastCommitUnixtime(localGitTimeout)
 		if err != nil {
-			notifySend("rapid-push: error finding last commit date")
+			notifySend("rp: error finding last commit date")
 
 			return err
 		}
@@ -64,35 +64,35 @@ func gitPush(currentBranch string) error {
 		fmt.Sprintf("refs/heads/%s", currentBranch),
 	)
 	if err != nil {
-		notifySend("rapid-push: failed to check for remote branch")
+		notifySend("rp: failed to check for remote branch")
 
 		return err
 	}
 
 	if strings.TrimSpace(out.Combine()) == "" {
-		notifySend("rapid-push: remote branch not found, not pushing")
+		notifySend("rp: remote branch not found, not pushing")
 
 		return nil
 	}
 
 	out, err = grace.RunTimed(pushTimeout, nil, "git", "push", "--quiet", "origin", currentBranch)
 	if errors.Is(err, grace.ErrTimeout) {
-		notifySend("rapid-push: push timeout")
+		notifySend(fmt.Sprintf("rp: push timeout: %s", currentBranch))
 
 		return err
 	} else if err != nil {
-		notifySend("rapid-push: error executing git push")
+		notifySend("rp: error executing git push")
 
 		return err
 	}
 
 	if out.ExitCode != 0 {
-		notifySend(fmt.Sprintf("rapid-push: push failed with %d exit code", out.ExitCode))
+		notifySend(fmt.Sprintf("rp: push failed with %d exit code", out.ExitCode))
 
 		return errors.New(out.Combine())
 	}
 
-	notifySend("rapid-push: pushed!")
+	notifySend(fmt.Sprintf("rp: pushed %s", currentBranch))
 
 	return nil
 }
