@@ -56,7 +56,6 @@ func rapidPush() error {
 func gitPush(currentBranch string) error {
 	out, err := grace.RunTimed(localGitTimeout, nil, "git", "remote")
 	if err != nil {
-
 		notifySend("rp: failed to check for git remote")
 
 		return err
