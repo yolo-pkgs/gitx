@@ -54,7 +54,20 @@ func rapidPush() error {
 
 // git ls-remote --heads origin refs/heads/[branch-name]
 func gitPush(currentBranch string) error {
-	out, err := grace.RunTimed(
+	out, err := grace.RunTimed(localGitTimeout, nil, "git", "remote")
+	if err != nil {
+		notifySend("rp: failed to check for git remote")
+
+		return err
+	}
+
+	if strings.TrimSpace(out.Combine()) == "" {
+		notifySend("rp: no remote configured")
+
+		return nil
+	}
+
+	out, err = grace.RunTimed(
 		localGitTimeout,
 		nil,
 		"git",
